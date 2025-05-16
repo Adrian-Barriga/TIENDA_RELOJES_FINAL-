@@ -17,7 +17,7 @@ const verificarToken = (req, res, next) => {
 };
 
 const esAdmin = (req, res, next) => {
-    if (req.usuario && req.usuario.rol === 'administrador') {
+    if (req.usuario && req.usuario.usuario && req.usuario.usuario.rol === 'administrador') {
         next();
     } else {
         res.status(403).json({ mensaje: 'Acceso denegado - Se requieren permisos de administrador' });
@@ -25,7 +25,7 @@ const esAdmin = (req, res, next) => {
 };
 
 const esComprador = (req, res, next) => {
-    if (req.usuario && req.usuario.rol === 'comprador') {
+    if (req.usuario && req.usuario.usuario && req.usuario.usuario.rol === 'comprador') {
         next();
     } else {
         res.status(403).json({ mensaje: 'Acceso denegado - Se requieren permisos de comprador' });

@@ -11,7 +11,7 @@ router.get('/', verificarToken, async (req, res) => {
              FROM carrito c 
              JOIN productos p ON c.id_producto = p.id 
              WHERE c.id_usuario = $1`,
-            [req.usuario.id]
+            [req.usuario.usuario.id]
         );
         res.json(carrito.rows);
     } catch (error) {
@@ -39,7 +39,7 @@ router.post('/', [verificarToken, esComprador], async (req, res) => {
         // Verificar si el producto ya está en el carrito
         const itemExistente = await pool.query(
             'SELECT * FROM carrito WHERE id_usuario = $1 AND id_producto = $2',
-            [req.usuario.id, id_producto]
+            [req.usuario.usuario.id, id_producto]
         );
         
         let resultado;
@@ -47,13 +47,13 @@ router.post('/', [verificarToken, esComprador], async (req, res) => {
             // Actualizar cantidad
             resultado = await pool.query(
                 'UPDATE carrito SET cantidad = cantidad + $1 WHERE id_usuario = $2 AND id_producto = $3 RETURNING *',
-                [cantidad, req.usuario.id, id_producto]
+                [cantidad, req.usuario.usuario.id, id_producto]
             );
         } else {
             // Agregar nuevo item
             resultado = await pool.query(
                 'INSERT INTO carrito (id_usuario, id_producto, cantidad) VALUES ($1, $2, $3) RETURNING *',
-                [req.usuario.id, id_producto, cantidad]
+                [req.usuario.usuario.id, id_producto, cantidad]
             );
         }
         
@@ -79,7 +79,7 @@ router.put('/:id_producto', [verificarToken, esComprador], async (req, res) => {
         
         const resultado = await pool.query(
             'UPDATE carrito SET cantidad = $1 WHERE id_usuario = $2 AND id_producto = $3 RETURNING *',
-            [cantidad, req.usuario.id, id_producto]
+            [cantidad, req.usuario.usuario.id, id_producto]
         );
         
         if (resultado.rows.length === 0) {
@@ -99,7 +99,7 @@ router.delete('/:id_producto', [verificarToken, esComprador], async (req, res) =
         const { id_producto } = req.params;
         const resultado = await pool.query(
             'DELETE FROM carrito WHERE id_usuario = $1 AND id_producto = $2 RETURNING *',
-            [req.usuario.id, id_producto]
+            [req.usuario.usuario.id, id_producto]
         );
         
         if (resultado.rows.length === 0) {
@@ -116,7 +116,7 @@ router.delete('/:id_producto', [verificarToken, esComprador], async (req, res) =
 // Vaciar carrito
 router.delete('/', [verificarToken, esComprador], async (req, res) => {
     try {
-        await pool.query('DELETE FROM carrito WHERE id_usuario = $1', [req.usuario.id]);
+        await pool.query('DELETE FROM carrito WHERE id_usuario = $1', [req.usuario.usuario.id]);
         res.json({ mensaje: 'Carrito vaciado exitosamente' });
     } catch (error) {
         console.error(error);

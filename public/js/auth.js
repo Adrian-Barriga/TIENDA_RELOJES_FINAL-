@@ -75,33 +75,51 @@ async function login(event) {
     }
 }
 
-// Verificar token y obtener información del usuario
-async function verificarToken() {
+// Verificar autenticación
+async function verificarAutenticacion() {
     const token = localStorage.getItem('token');
-    if (!token) return null;
+    const userDropdown = document.getElementById('userDropdown');
+    const loginButton = document.getElementById('loginButton');
+    const adminPanel = document.getElementById('adminPanel');
+    const userName = document.getElementById('userName');
 
-    try {
-        console.log("Verificando token en la URL:", `${API_URL}/auth/verificar`);
-        const response = await fetch(`${API_URL}/auth/verificar`, {
-            headers: {
-                'x-auth-token': token
+    if (token) {
+        try {
+            const response = await fetch('/api/auth/verificar', {
+                headers: {
+                    'x-auth-token': token
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                
+                // Actualizar elementos solo si existen
+                if (userName) userName.textContent = data.usuario.nombre;
+                if (userDropdown) userDropdown.style.display = 'block';
+                if (loginButton) loginButton.style.display = 'none';
+
+                // Mostrar panel de administración si el usuario es administrador
+                if (data.usuario.rol === 'administrador' && adminPanel) {
+                    adminPanel.style.display = 'block';
+                }
+
+                return data.usuario;
+            } else {
+                throw new Error('Token inválido');
             }
-        });
-
-        if (!response.ok) {
-            console.error("Error en la respuesta:", response.status, response.statusText);
+        } catch (error) {
+            console.error('Error:', error);
             localStorage.removeItem('token');
+            if (userDropdown) userDropdown.style.display = 'none';
+            if (loginButton) loginButton.style.display = 'block';
+            if (adminPanel) adminPanel.style.display = 'none';
             return null;
         }
-
-        const data = await response.json();
-        console.log("Usuario autenticado:", data.usuario.nombre);
-        showToast(`Bienvenido, ${data.usuario.nombre}!`);
-        return data;
-    } catch (error) {
-        console.error('Error al verificar token:', error);
-        localStorage.removeItem('token');
-        showToast('Error de sesión. Por favor, inicia sesión nuevamente.', 'warning');
+    } else {
+        if (userDropdown) userDropdown.style.display = 'none';
+        if (loginButton) loginButton.style.display = 'block';
+        if (adminPanel) adminPanel.style.display = 'none';
         return null;
     }
 }
@@ -120,11 +138,5 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Verificar autenticación al cargar la página
-    verificarToken().then(data => {
-        if (data && data.usuario) {
-            // El usuario está autenticado
-            updateAuthUI(data.usuario.nombre);
-            console.log("Sesión iniciada como:", data.usuario.nombre);
-        }
-    });
+    verificarAutenticacion();
 }); 
