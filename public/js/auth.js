@@ -1,6 +1,16 @@
 // Funciones de autenticación
 // Usamos la variable global API_URL definida en main.js
 
+// Verificar si el usuario está autenticado
+function isAuthenticated() {
+    return localStorage.getItem('token') !== null;
+}
+
+// Obtener el token de autenticación
+function getAuthToken() {
+    return localStorage.getItem('token');
+}
+
 // Registro de usuario
 async function register(event) {
     event.preventDefault();
@@ -85,15 +95,16 @@ async function verificarAutenticacion() {
 
     if (token) {
         try {
-            const response = await fetch('/api/auth/verificar', {
+            const response = await fetch(`${API_URL}/auth/verificar`, {
                 headers: {
-                    'x-auth-token': token
+                    'x-auth-token': token,
+                    'Content-Type': 'application/json'
                 }
             });
 
+            const data = await response.json();
+
             if (response.ok) {
-                const data = await response.json();
-                
                 // Actualizar elementos solo si existen
                 if (userName) userName.textContent = data.usuario.nombre;
                 if (userDropdown) userDropdown.style.display = 'block';
@@ -106,7 +117,7 @@ async function verificarAutenticacion() {
 
                 return data.usuario;
             } else {
-                throw new Error('Token inválido');
+                throw new Error(data.mensaje || 'Error de autenticación');
             }
         } catch (error) {
             console.error('Error:', error);

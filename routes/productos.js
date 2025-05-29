@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { pool } = require('../app');
-const { verificarToken, esAdmin } = require('../middleware/auth');
+const { verificarToken, esAdmin, esAdminOVendedor } = require('../middleware/auth');
 
 // Obtener todos los productos
 router.get('/', async (req, res) => {
@@ -32,12 +32,12 @@ router.get('/:id', async (req, res) => {
 });
 
 // Crear un nuevo producto (solo admin)
-router.post('/', [verificarToken, esAdmin], async (req, res) => {
+router.post('/', [verificarToken, esAdminOVendedor], async (req, res) => {
     try {
-        const { nombre, descripcion, precio, stock, imagen_url } = req.body;
+        const { nombre, descripcion, precio, stock, imagen_url, en_oferta, descuento } = req.body;
         const nuevoProducto = await pool.query(
-            'INSERT INTO productos (nombre, descripcion, precio, stock, imagen_url) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-            [nombre, descripcion, precio, stock, imagen_url]
+            'INSERT INTO productos (nombre, descripcion, precio, stock, imagen_url, en_oferta, descuento) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
+            [nombre, descripcion, precio, stock, imagen_url, en_oferta || false, descuento || 0]
         );
         
         res.json(nuevoProducto.rows[0]);
@@ -48,14 +48,14 @@ router.post('/', [verificarToken, esAdmin], async (req, res) => {
 });
 
 // Actualizar un producto (solo admin)
-router.put('/:id', [verificarToken, esAdmin], async (req, res) => {
+router.put('/:id', [verificarToken, esAdminOVendedor], async (req, res) => {
     try {
         const { id } = req.params;
-        const { nombre, descripcion, precio, stock, imagen_url } = req.body;
+        const { nombre, descripcion, precio, stock, imagen_url, en_oferta, descuento } = req.body;
         
         const productoActualizado = await pool.query(
-            'UPDATE productos SET nombre = $1, descripcion = $2, precio = $3, stock = $4, imagen_url = $5 WHERE id = $6 RETURNING *',
-            [nombre, descripcion, precio, stock, imagen_url, id]
+            'UPDATE productos SET nombre = $1, descripcion = $2, precio = $3, stock = $4, imagen_url = $5, en_oferta = $6, descuento = $7 WHERE id = $8 RETURNING *',
+            [nombre, descripcion, precio, stock, imagen_url, en_oferta || false, descuento || 0, id]
         );
         
         if (productoActualizado.rows.length === 0) {
@@ -70,7 +70,7 @@ router.put('/:id', [verificarToken, esAdmin], async (req, res) => {
 });
 
 // Eliminar un producto (solo admin)
-router.delete('/:id', [verificarToken, esAdmin], async (req, res) => {
+router.delete('/:id', [verificarToken, esAdminOVendedor], async (req, res) => {
     try {
         const { id } = req.params;
         const resultado = await pool.query('DELETE FROM productos WHERE id = $1 RETURNING *', [id]);

@@ -2,12 +2,18 @@ const express = require('express');
 const cors = require('cors');
 const { Pool } = require('pg');
 const path = require('path');
+const { registrarNavegacion } = require('./middleware/historial');
 require('dotenv').config();
 
 const app = express();
 
-// Middleware
-app.use(cors());
+// Configuración de CORS
+app.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'x-auth-token']
+}));
+
 app.use(express.json());
 app.use(express.static('public'));
 
@@ -32,11 +38,16 @@ pool.connect((err, client, release) => {
 // Exportar pool para usar en otros archivos
 module.exports.pool = pool;
 
+// Middleware de historial
+app.use(registrarNavegacion);
+
 // Rutas
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/productos', require('./routes/productos'));
 app.use('/api/carrito', require('./routes/carrito'));
 app.use('/api/pagos', require('./routes/pagos'));
+app.use('/api/historial', require('./routes/historial'));
+app.use('/api/usuarios', require('./routes/usuarios'));
 
 // Ruta para servir la aplicación frontend
 app.get('*', (req, res) => {

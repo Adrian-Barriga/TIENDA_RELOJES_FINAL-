@@ -57,7 +57,18 @@ router.post('/', [verificarToken, esComprador], async (req, res) => {
             );
         }
         
-        res.json(resultado.rows[0]);
+        // Obtener el producto completo para la respuesta
+        const productoCompleto = await pool.query(
+            'SELECT * FROM productos WHERE id = $1',
+            [id_producto]
+        );
+        
+        const respuesta = {
+            ...resultado.rows[0],
+            ...productoCompleto.rows[0]
+        };
+        
+        res.json(respuesta);
     } catch (error) {
         console.error(error);
         res.status(500).json({ mensaje: 'Error en el servidor' });

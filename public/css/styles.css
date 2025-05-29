@@ -2,11 +2,47 @@
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     padding-top: 56px;
+    background: -webkit-linear-gradient(88deg, #348ea2,#000000,#000000);
+    background: linear-gradient(88deg, #348ea2,#000000,#000000);
+    color: #ffffff;
+}
+
+/* Navbar */
+.navbar-dark {
+    background-color: #080000 !important;
+}
+
+.navbar-dark .navbar-brand,
+.navbar-dark .nav-link {
+    color: white !important;
+}
+
+.navbar-dark .navbar-toggler {
+    border-color: white;
+}
+
+/* Dropdown menu */
+.dropdown-menu {
+    background-color: #ffffff;
+    border: 1px solid #cccccc;
+}
+
+.dropdown-item {
+    color: #000000 !important;
+}
+
+.dropdown-item:hover {
+    background-color: #f8f9fa;
+    color: #000000 !important;
+}
+
+.dropdown-divider {
+    border-color: #cccccc;
 }
 
 /* Hero Section */
 .hero-section {
-    background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
+    background: linear-gradient(88deg, rgba(52, 142, 162, 0.7), rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
                 url('/images/banner.jpg') center/cover no-repeat;
     color: white;
     padding: 120px 0;
@@ -16,6 +52,12 @@ body {
 
 .hero-section h1 {
     margin-bottom: 20px;
+}
+
+.display-4 {
+    font-size: calc(1.475rem + 2.7vw);
+    font-weight: 700;
+    line-height: 1.2;
 }
 
 .hero-section .btn-primary {
@@ -34,11 +76,14 @@ body {
 .product-card {
     transition: transform 0.3s ease;
     margin-bottom: 20px;
+    background-color: #ffffff;
+    color: #000000;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 .product-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
 .product-card img {
@@ -48,8 +93,9 @@ body {
 
 /* Carrito */
 .cart-item {
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid #cccccc;
     padding: 15px 0;
+    color: #000000;
 }
 
 .cart-item:last-child {
@@ -63,17 +109,48 @@ body {
     padding: 20px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     border-radius: 5px;
+    background-color: #ffffff;
+    color: #000000;
+    border: 1px solid #cccccc;
+}
+
+.form-container label {
+    color: #000000;
+}
+
+.form-container input,
+.form-container select,
+.form-container textarea {
+    background-color: #f8f9fa !important;
+    border: 1px solid #cccccc;
+    color: #000000 !important;
+}
+
+.form-container input:focus,
+.form-container select:focus,
+.form-container textarea:focus {
+    background-color: #e9ecef !important;
+    border-color: #007bff;
+    color: #000000 !important;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.form-container input::placeholder,
+.form-container textarea::placeholder {
+    color: #6c757d !important;
 }
 
 /* Botones */
 .btn-primary {
-    background-color: #007bff;
-    border-color: #007bff;
+    background-color: #000000;
+    border-color: #000000;
+    color: white;
 }
 
 .btn-primary:hover {
-    background-color: #0056b3;
-    border-color: #0056b3;
+    background-color: #333333;
+    border-color: #333333;
+    color: white;
 }
 
 /* Animaciones */
@@ -105,14 +182,24 @@ body {
 
 /* Admin Panel */
 .admin-panel {
-    background-color: #f8f9fa;
+    background-color: #ffffff;
     padding: 20px;
     border-radius: 5px;
     margin-bottom: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    color: #000000;
+    border: 1px solid #cccccc;
 }
 
 .admin-panel .table {
-    background-color: white;
+    background-color: #ffffff;
+    color: #000000;
+}
+
+.admin-panel .table th,
+.admin-panel .table td {
+    color: #000000;
+    border-color: #cccccc;
 }
 
 /* Loading Spinner */
@@ -135,6 +222,12 @@ body {
     top: 20px;
     right: 20px;
     z-index: 1000;
+}
+
+.toast {
+    background-color: #ffffff;
+    color: #000000;
+    border: 1px solid #cccccc;
 }
 
 /* Custom Scrollbar */
@@ -164,4 +257,158 @@ body {
 
 .map-container iframe {
     border: 0;
+}
+
+/* Cards */
+.card {
+    background-color: #ffffff;
+    color: #000000;
+    border: 1px solid #cccccc;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.card-header.bg-primary {
+    background-color: #007bff !important;
+    color: white;
+    border-bottom: 1px solid #cccccc;
+}
+
+.card-body {
+    color: #000000;
+}
+
+/* Tablas */
+.table {
+    color: #000000;
+}
+
+.table thead th {
+    border-bottom: 2px solid #cccccc;
+    color: #000000;
+}
+
+.table td {
+    border-top: 1px solid #eeeeee;
+}
+
+/* Botones de acción en tablas */
+.btn-sm.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+    color: white;
+}
+
+.btn-sm.btn-primary:hover {
+    background-color: #0056b3;
+    border-color: #0056b3;
+    color: white;
+}
+
+/* Botón de cerrar sesión */
+.btn-outline-light {
+    color: #000000;
+    border-color: #000000;
+}
+
+.btn-outline-light:hover {
+    background-color: #000000;
+    border-color: #000000;
+    color: white;
+}
+
+/* Footer */
+footer {
+    background-color: #080000 !important;
+    border-top: 1px solid #cccccc;
+    color: white;
+}
+
+footer a {
+    color: white !important;
+}
+
+footer a:hover {
+    color: #cccccc !important;
+}
+
+/* Modal Styles */
+.modal-content {
+    background-color: #ffffff;
+    color: #000000;
+    border: 1px solid #cccccc;
+}
+
+.modal-header {
+    border-bottom: 1px solid #cccccc;
+    background-color: #ffffff;
+}
+
+.modal-footer {
+    border-top: 1px solid #cccccc;
+    background-color: #ffffff;
+}
+
+.modal-title {
+    color: #000000;
+}
+
+.modal-body {
+    background-color: #ffffff;
+}
+
+.modal-body label {
+    color: #000000;
+}
+
+.modal-body input,
+.modal-body select,
+.modal-body textarea {
+    background-color: #f8f9fa !important;
+    border: 1px solid #cccccc;
+    color: #000000 !important;
+}
+
+.modal-body input:focus,
+.modal-body select:focus,
+.modal-body textarea:focus {
+    background-color: #e9ecef !important;
+    border-color: #007bff;
+    color: #000000 !important;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.modal-body input::placeholder,
+.modal-body textarea::placeholder {
+    color: #6c757d !important;
+}
+
+.modal .btn-close {
+    filter: none;
+}
+
+/* Modal para productos */
+.product-modal .modal-content {
+    background-color: #ffffff;
+}
+
+.product-modal .form-group {
+    margin-bottom: 1rem;
+}
+
+.product-modal .form-group label {
+    color: #000000;
+    margin-bottom: 0.5rem;
+}
+
+.product-modal .form-control {
+    background-color: #f8f9fa !important;
+    border: 1px solid #cccccc;
+    color: #000000 !important;
+}
+
+.product-modal .form-control:focus {
+    background-color: #e9ecef !important;
+    border-color: #007bff;
+    color: #000000 !important;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
 } 

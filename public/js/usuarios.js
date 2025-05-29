@@ -2,14 +2,15 @@
 async function verificarAdmin() {
     const token = localStorage.getItem('token');
     if (!token) {
-        window.location.href = 'login.html';
+        window.location.href = '/login.html';
         return;
     }
 
     try {
         const response = await fetch('/api/auth/verificar', {
             headers: {
-                'x-auth-token': token
+                'x-auth-token': token,
+                'Content-Type': 'application/json'
             }
         });
 
@@ -19,21 +20,25 @@ async function verificarAdmin() {
 
         const data = await response.json();
         if (data.usuario.rol !== 'administrador') {
-            window.location.href = 'index.html';
+            window.location.href = '/';
         }
+        // Guardar el ID del usuario actual
+        localStorage.setItem('userId', data.usuario.id);
     } catch (error) {
         console.error('Error:', error);
-        window.location.href = 'login.html';
+        window.location.href = '/login.html';
     }
 }
 
-// Cargar lista de usuarios
+// Cargar usuarios
 async function cargarUsuarios() {
-    const token = localStorage.getItem('token');
     try {
+        toggleSpinner();
+        const token = localStorage.getItem('token');
         const response = await fetch('/api/auth/usuarios', {
             headers: {
-                'x-auth-token': token
+                'x-auth-token': token,
+                'Content-Type': 'application/json'
             }
         });
 
@@ -42,39 +47,84 @@ async function cargarUsuarios() {
         }
 
         const usuarios = await response.json();
-        const tablaUsuarios = document.getElementById('tablaUsuarios');
-        tablaUsuarios.innerHTML = '';
+        const tbody = document.getElementById('usuariosTableBody');
+        tbody.innerHTML = '';
 
         usuarios.forEach(usuario => {
-            const fila = document.createElement('tr');
-            fila.innerHTML = `
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
                 <td>${usuario.id}</td>
                 <td>${usuario.nombre}</td>
                 <td>${usuario.correo}</td>
                 <td>${usuario.rol}</td>
                 <td>
-                    <button class="btn btn-sm btn-primary" onclick="editarUsuario(${usuario.id})">
-                        <i class="fas fa-edit"></i> Editar
-                    </button>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" 
+                            ${usuario.estado === 'activo' ? 'checked' : ''}
+                            onchange="cambiarEstado(${usuario.id}, this.checked)"
+                            ${usuario.id === parseInt(localStorage.getItem('userId')) ? 'disabled' : ''}>
+                        <label class="form-check-label">
+                            ${usuario.estado === 'activo' ? 'Activo' : 'Inactivo'}
+                        </label>
+                    </div>
+                </td>
+                <td>
                     <button class="btn btn-sm btn-danger" onclick="eliminarUsuario(${usuario.id})">
-                        <i class="fas fa-trash"></i> Eliminar
+                        <i class="fas fa-trash"></i>
                     </button>
                 </td>
             `;
-            tablaUsuarios.appendChild(fila);
+            tbody.appendChild(tr);
         });
     } catch (error) {
         console.error('Error:', error);
-        alert('Error al cargar la lista de usuarios');
+        showToast('Error al cargar usuarios', 'danger');
+    } finally {
+        toggleSpinner(false);
+    }
+}
+
+// Cambiar estado del usuario
+async function cambiarEstado(id, activo) {
+    try {
+        toggleSpinner();
+        const token = localStorage.getItem('token');
+        if (!token) {
+            throw new Error('No hay token de autenticación');
+        }
+
+        const response = await fetch(`/api/auth/usuarios/${id}/estado`, {
+            method: 'PUT',
+            headers: {
+                'x-auth-token': token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                estado: activo ? 'activo' : 'inactivo'
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.mensaje || 'Error al cambiar el estado');
+        }
+
+        showToast('Estado actualizado exitosamente');
+        await cargarUsuarios(); // Recargar la lista de usuarios
+    } catch (error) {
+        console.error('Error:', error);
+        showToast(error.message, 'danger');
+        await cargarUsuarios(); // Recargar para restaurar el estado anterior
+    } finally {
+        toggleSpinner(false);
     }
 }
 
 // Crear nuevo usuario
-async function crearUsuario(event) {
-    event.preventDefault();
-    const token = localStorage.getItem('token');
-    
-    const usuario = {
+async function crearUsuario() {
+    const form = document.getElementById('crearUsuarioForm');
+    const formData = {
         nombre: document.getElementById('nombre').value,
         correo: document.getElementById('correo').value,
         password: document.getElementById('password').value,
@@ -82,132 +132,65 @@ async function crearUsuario(event) {
     };
 
     try {
+        toggleSpinner();
+        const token = localStorage.getItem('token');
         const response = await fetch('/api/auth/crear-usuario', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'x-auth-token': token
+                'x-auth-token': token,
+                'Content-Type': 'application/json'
             },
-            body: JSON.stringify(usuario)
+            body: JSON.stringify(formData)
         });
-
-        if (!response.ok) {
-            throw new Error('Error al crear usuario');
-        }
 
         const data = await response.json();
-        alert('Usuario creado exitosamente');
-        document.getElementById('formCrearUsuario').reset();
+
+        if (!response.ok) {
+            throw new Error(data.mensaje || 'Error al crear usuario');
+        }
+
+        showToast('Usuario creado exitosamente');
+        form.reset();
+        bootstrap.Modal.getInstance(document.getElementById('crearUsuarioModal')).hide();
         cargarUsuarios();
     } catch (error) {
         console.error('Error:', error);
-        alert('Error al crear el usuario');
-    }
-}
-
-// Editar usuario
-async function editarUsuario(id) {
-    const token = localStorage.getItem('token');
-    try {
-        // Obtener datos del usuario
-        const response = await fetch(`/api/auth/usuarios/${id}`, {
-            headers: {
-                'x-auth-token': token
-            }
-        });
-
-        if (!response.ok) {
-            throw new Error('Error al obtener datos del usuario');
-        }
-
-        const usuario = await response.json();
-        
-        // Llenar el formulario con los datos del usuario
-        document.getElementById('nombre').value = usuario.nombre;
-        document.getElementById('correo').value = usuario.correo;
-        document.getElementById('rol').value = usuario.rol;
-        document.getElementById('password').value = ''; // Dejar en blanco para no cambiar la contraseña
-
-        // Cambiar el botón de submit para actualizar
-        const submitBtn = document.querySelector('#formCrearUsuario button[type="submit"]');
-        submitBtn.textContent = 'Actualizar Usuario';
-        submitBtn.onclick = (e) => actualizarUsuario(e, id);
-    } catch (error) {
-        console.error('Error:', error);
-        alert('Error al cargar datos del usuario');
-    }
-}
-
-// Actualizar usuario
-async function actualizarUsuario(event, id) {
-    event.preventDefault();
-    const token = localStorage.getItem('token');
-    
-    const usuario = {
-        nombre: document.getElementById('nombre').value,
-        correo: document.getElementById('correo').value,
-        rol: document.getElementById('rol').value
-    };
-
-    // Solo incluir password si se ha modificado
-    const password = document.getElementById('password').value;
-    if (password) {
-        usuario.password = password;
-    }
-
-    try {
-        const response = await fetch(`/api/auth/usuarios/${id}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'x-auth-token': token
-            },
-            body: JSON.stringify(usuario)
-        });
-
-        if (!response.ok) {
-            throw new Error('Error al actualizar usuario');
-        }
-
-        alert('Usuario actualizado exitosamente');
-        document.getElementById('formCrearUsuario').reset();
-        
-        // Restaurar el botón de submit para crear
-        const submitBtn = document.querySelector('#formCrearUsuario button[type="submit"]');
-        submitBtn.textContent = 'Crear Usuario';
-        submitBtn.onclick = crearUsuario;
-        
-        cargarUsuarios();
-    } catch (error) {
-        console.error('Error:', error);
-        alert('Error al actualizar el usuario');
+        showToast(error.message, 'danger');
+    } finally {
+        toggleSpinner(false);
     }
 }
 
 // Eliminar usuario
 async function eliminarUsuario(id) {
-    if (!confirm('¿Está seguro de que desea eliminar este usuario?')) {
+    if (!confirm('¿Estás seguro de que deseas eliminar este usuario?')) {
         return;
     }
 
-    const token = localStorage.getItem('token');
     try {
+        toggleSpinner();
+        const token = localStorage.getItem('token');
         const response = await fetch(`/api/auth/usuarios/${id}`, {
             method: 'DELETE',
             headers: {
-                'x-auth-token': token
+                'x-auth-token': token,
+                'Content-Type': 'application/json'
             }
         });
 
+        const data = await response.json();
+
         if (!response.ok) {
-            throw new Error('Error al eliminar usuario');
+            throw new Error(data.mensaje || 'Error al eliminar usuario');
         }
 
-        alert('Usuario eliminado exitosamente');
+        showToast('Usuario eliminado exitosamente');
         cargarUsuarios();
     } catch (error) {
         console.error('Error:', error);
-        alert('Error al eliminar el usuario');
+        showToast(error.message, 'danger');
+    } finally {
+        toggleSpinner(false);
     }
 }
 
@@ -221,6 +204,17 @@ function cerrarSesion() {
 document.addEventListener('DOMContentLoaded', () => {
     verificarAdmin();
     cargarUsuarios();
-    document.getElementById('formCrearUsuario').addEventListener('submit', crearUsuario);
-    document.getElementById('btnLogout').addEventListener('click', cerrarSesion);
+    // Asegurarse de que el formulario de crear usuario existe antes de añadir el listener
+    const crearUsuarioForm = document.getElementById('crearUsuarioForm');
+    if (crearUsuarioForm) {
+        crearUsuarioForm.addEventListener('submit', (e) => {
+            e.preventDefault(); // Prevenir el envío por defecto
+            crearUsuario();
+        });
+    }
+    // Asegurarse de que el botón de cerrar sesión existe antes de añadir el listener
+    const btnCerrarSesion = document.getElementById('btnCerrarSesion');
+    if (btnCerrarSesion) {
+        btnCerrarSesion.addEventListener('click', cerrarSesion);
+    }
 }); 

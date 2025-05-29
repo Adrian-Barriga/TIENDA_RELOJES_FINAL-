@@ -38,7 +38,14 @@ function displayProducts() {
                     <h5 class="card-title">${product.nombre}</h5>
                     <p class="card-text">${product.descripcion}</p>
                     <p class="card-text">
-                        <strong>Precio: $${product.precio}</strong><br>
+                        ${product.en_oferta && product.descuento > 0 ? `
+                            <span style='color: #e74c3c; font-weight: bold;'>Oferta: $${(product.precio * (1 - product.descuento / 100)).toFixed(2)}</span><br>
+                            <span style='text-decoration: line-through; color: #888;'>Precio original: $${product.precio}</span><br>
+                            <span class='badge bg-danger'>-${product.descuento}%</span>
+                        ` : `
+                            <strong>Precio: $${product.precio}</strong>
+                        `}
+                        <br>
                         <small class="text-muted">Stock: ${product.stock} unidades</small>
                     </p>
                 </div>
@@ -115,7 +122,7 @@ async function checkAdminStatus() {
         });
         const data = await response.json();
 
-        if (data.usuario.rol === 'administrador') {
+        if (data.usuario.rol === 'administrador' || data.usuario.rol === 'vendedor') {
             document.getElementById('adminControls').style.display = 'block';
             document.querySelectorAll('.admin-controls').forEach(el => el.style.display = 'block');
         }
@@ -167,7 +174,9 @@ async function addProduct() {
         descripcion: document.getElementById('productDescription').value,
         precio: parseFloat(document.getElementById('productPrice').value),
         stock: parseInt(document.getElementById('productStock').value),
-        imagen_url: document.getElementById('productImage').value
+        imagen_url: document.getElementById('productImage').value,
+        en_oferta: document.getElementById('productOferta').checked,
+        descuento: parseInt(document.getElementById('productDescuento').value) || 0
     };
 
     try {
@@ -202,6 +211,8 @@ async function editProduct(id) {
     document.getElementById('editProductPrice').value = product.precio;
     document.getElementById('editProductStock').value = product.stock;
     document.getElementById('editProductImage').value = product.imagen_url;
+    document.getElementById('editProductOferta').checked = !!product.en_oferta;
+    document.getElementById('editProductDescuento').value = product.descuento || 0;
 
     new bootstrap.Modal(document.getElementById('editProductModal')).show();
 }
@@ -213,7 +224,9 @@ async function updateProduct() {
         descripcion: document.getElementById('editProductDescription').value,
         precio: parseFloat(document.getElementById('editProductPrice').value),
         stock: parseInt(document.getElementById('editProductStock').value),
-        imagen_url: document.getElementById('editProductImage').value
+        imagen_url: document.getElementById('editProductImage').value,
+        en_oferta: document.getElementById('editProductOferta').checked,
+        descuento: parseInt(document.getElementById('editProductDescuento').value) || 0
     };
 
     try {

@@ -1,6 +1,24 @@
 // Funciones de utilidad
 // Definir API_URL como variable global para compartirla entre archivos
-window.API_URL = 'http://localhost:3001/api';
+window.API_URL = window.location.origin + '/api';
+
+// Registrar navegación
+async function registrarNavegacion(pagina, accion = null, detalles = null) {
+    if (!isAuthenticated()) return;
+
+    try {
+        await fetch(`${API_URL}/historial`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-auth-token': localStorage.getItem('token')
+            },
+            body: JSON.stringify({ pagina, accion, detalles })
+        });
+    } catch (error) {
+        console.error('Error al registrar navegación:', error);
+    }
+}
 
 // Mostrar notificación
 function showToast(message, type = 'success') {
@@ -107,22 +125,39 @@ async function addToCart(productId) {
 
 // Actualizar contador del carrito
 async function updateCartCounter() {
-    if (!isAuthenticated()) return;
-
     try {
+        const token = localStorage.getItem('token');
+        const cartCounterElement = document.getElementById('cartCounter');
+
+        if (!token || !cartCounterElement) {
+            if (cartCounterElement) {
+                cartCounterElement.textContent = '0';
+            }
+            return;
+        }
+
         const response = await fetch(`${API_URL}/carrito`, {
             headers: {
-                'x-auth-token': localStorage.getItem('token')
+                'x-auth-token': token,
+                'Content-Type': 'application/json'
             }
         });
-        const carrito = await response.json();
-        
-        const contador = document.getElementById('carrito-contador');
-        if (contador) {
-            contador.textContent = carrito.reduce((total, item) => total + item.cantidad, 0);
+
+        if (!response.ok) {
+            throw new Error('Error al obtener el carrito');
         }
+
+        const carrito = await response.json();
+        const total = Array.isArray(carrito) ? carrito.reduce((sum, item) => sum + item.cantidad, 0) : 0;
+        cartCounterElement.textContent = total.toString();
     } catch (error) {
         console.error('Error al actualizar contador:', error);
+        const cartCounterElement = document.getElementById('cartCounter');
+        if (cartCounterElement) {
+            cartCounterElement.textContent = '0';
+        }
+    } finally {
+        // Spinner handled by individual page scripts if needed
     }
 }
 
@@ -158,6 +193,9 @@ document.addEventListener('DOMContentLoaded', () => {
     updateAuthUI();
     updateCartCounter();
 
+    // Registrar navegación inicial
+    registrarNavegacion(window.location.pathname, 'PAGE_LOAD');
+
     // Manejar cierre de sesión
     const btnCerrarSesion = document.getElementById('btnCerrarSesion');
     if (btnCerrarSesion) {
@@ -169,4 +207,12 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => window.location.href = '/', 1000);
         });
     }
+
+    // Registrar clics en enlaces
+    document.addEventListener('click', (e) => {
+        const link = e.target.closest('a');
+        if (link && link.href) {
+            registrarNavegacion(link.href, 'CLICK', { text: link.textContent });
+        }
+    });
 }); 

@@ -25,15 +25,28 @@ const esAdmin = (req, res, next) => {
 };
 
 const esComprador = (req, res, next) => {
-    if (req.usuario && req.usuario.usuario && req.usuario.usuario.rol === 'comprador') {
+    // Permitir que cualquier usuario autenticado pueda usar el carrito
+    if (req.usuario && req.usuario.usuario) {
         next();
     } else {
-        res.status(403).json({ mensaje: 'Acceso denegado - Se requieren permisos de comprador' });
+        res.status(403).json({ mensaje: 'Acceso denegado - Debe iniciar sesión' });
+    }
+};
+
+const esAdminOVendedor = (req, res, next) => {
+    if (
+        req.usuario && req.usuario.usuario &&
+        (req.usuario.usuario.rol === 'administrador' || req.usuario.usuario.rol === 'vendedor')
+    ) {
+        next();
+    } else {
+        res.status(403).json({ mensaje: 'Acceso denegado - Se requieren permisos de administrador o vendedor' });
     }
 };
 
 module.exports = {
     verificarToken,
     esAdmin,
-    esComprador
+    esComprador,
+    esAdminOVendedor
 }; 

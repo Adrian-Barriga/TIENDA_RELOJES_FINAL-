@@ -139,6 +139,18 @@
                             <label for="productImage" class="form-label">URL de la Imagen</label>
                             <input type="url" class="form-control" id="productImage" required>
                         </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="productOferta">
+                                <label class="form-check-label" for="productOferta">
+                                    ¿Producto en oferta?
+                                </label>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="productDescuento" class="form-label">Descuento (%)</label>
+                            <input type="number" class="form-control" id="productDescuento" min="0" max="100" step="1" value="0">
+                        </div>
                     </form>
                 </div>
                 <div class="modal-footer">
@@ -179,6 +191,18 @@
                         <div class="mb-3">
                             <label for="editProductImage" class="form-label">URL de la Imagen</label>
                             <input type="url" class="form-control" id="editProductImage" required>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="editProductOferta">
+                                <label class="form-check-label" for="editProductOferta">
+                                    ¿Producto en oferta?
+                                </label>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editProductDescuento" class="form-label">Descuento (%)</label>
+                            <input type="number" class="form-control" id="editProductDescuento" min="0" max="100" step="1" value="0">
                         </div>
                     </form>
                 </div>

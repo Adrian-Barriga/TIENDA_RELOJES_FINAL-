@@ -124,12 +124,12 @@ router.get('/verificar', verificarToken, async (req, res) => {
 router.get('/usuarios', verificarToken, esAdmin, async (req, res) => {
     try {
         const usuarios = await pool.query(
-            'SELECT id, nombre, correo, rol FROM usuarios'
+            'SELECT id, nombre, correo, rol, estado FROM usuarios'
         );
         res.json(usuarios.rows);
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ mensaje: 'Error en el servidor' });
+        console.error('Error al obtener usuarios:', error);
+        res.status(500).json({ mensaje: 'Error al obtener la lista de usuarios' });
     }
 });
 
@@ -262,6 +262,43 @@ router.delete('/usuarios/:id', verificarToken, esAdmin, async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ mensaje: 'Error en el servidor' });
+    }
+});
+
+// Actualizar estado del usuario
+router.put('/usuarios/:id/estado', verificarToken, esAdmin, async (req, res) => {
+    const { estado } = req.body;
+    const id = req.params.id;
+
+    try {
+        // Verificar que el usuario no esté intentando cambiar su propio estado
+        if (id === req.usuario.usuario.id.toString()) {
+            return res.status(400).json({ mensaje: 'No puedes cambiar tu propio estado' });
+        }
+
+        // Verificar si el usuario existe
+        const usuarioExiste = await pool.query(
+            'SELECT * FROM usuarios WHERE id = $1',
+            [id]
+        );
+
+        if (usuarioExiste.rows.length === 0) {
+            return res.status(404).json({ mensaje: 'Usuario no encontrado' });
+        }
+
+        // Actualizar el estado
+        const usuarioActualizado = await pool.query(
+            'UPDATE usuarios SET estado = $1 WHERE id = $2 RETURNING id, nombre, correo, rol, estado',
+            [estado, id]
+        );
+
+        res.json({
+            mensaje: 'Estado actualizado exitosamente',
+            usuario: usuarioActualizado.rows[0]
+        });
+    } catch (error) {
+        console.error('Error al actualizar estado:', error);
+        res.status(500).json({ mensaje: 'Error al actualizar el estado del usuario' });
     }
 });
 
